@@ -6,12 +6,13 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.action_chains import ActionChains
 import snowflake.connector
+from config import SNOWFLAKE_CONFIG
 import pandas as pd
 from snowflake.connector.pandas_tools import write_pandas
 
 
 options = Options()
-options.add_argument("--headless=new")  #disable for debugging
+options.add_argument("--headless=new")  
 driver = webdriver.Chrome()
 
 driver.get("https://www.booking.com/searchresults.en-gb.html?advanced_search_switch=standard&ss=Glasgow&ssne=Glasgow&ssne_untouched=Glasgow&efdco=1&label=gog235jc-10CAEoggI46AdICVgDaFCIAQGYATO4AQfIAQzYAQPoAQH4AQGIAgGoAgG4Auv4j84GwAIB0gIkYTUyOTRkZWUtMGU1MS00YTI1LTk3ZDktMmM0ZWVhMTdkYWQ22AIB4AIB&aid=397594&lang=en-gb&sb=1&src_elem=sb&src=searchresults&dest_id=-2597039&dest_type=city&checkin=2026-03-28&checkout=2026-03-29&group_adults=2&no_rooms=1&group_children=0")
@@ -49,11 +50,6 @@ for i in range(1,5):
 hotels = wait.until(
   EC.visibility_of_all_elements_located((By.CSS_SELECTOR, '[data-testid="property-card"]'))
 )
-
-#hotels = WebDriverWait(driver, 20).until(EC.visibility_of_all_elements_located((By.CSS_SELECTOR, '[data-testid="property-card"]')))
-#wait for hotels
-
-#ActionChains(driver).move_to_element(driver.sl.find_element_by_id('[data-testid="property-card"]')).perform()
 
 results = []
 
@@ -116,15 +112,7 @@ df = df[["ID", "HOTELNAME", "PRICE", "RATING", "REV"]]
 print(df.tail())
 
 # Connect to Snowflake
-conn = snowflake.connector.connect(
-    account = "OMXSZHZ-OD87060",
-    user = "ABLOAF",
-    password = "Hello@flake123",
-    role = "ACCOUNTADMIN",
-    warehouse = "COMPUTE_WH",
-    database = "MYDB",
-    schema = "MYSCHEMA"
-)
+conn = snowflake.connector.connect(**SNOWFLAKE_CONFIG)
 cursor = conn.cursor()
 
 insert_query = """
